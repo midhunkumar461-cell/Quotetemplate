@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editorial Instagram Quote Graphic Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Custom styles & design tokens */
+        :root {
+            --canvas-width: 1080px;
+            --canvas-height: 1920px;
+        }
+
+        /* Prevent scrollbars on parent preview wrapper */
+        .preview-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #0d0d0e;
+            background-image: radial-gradient(#1f1f23 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* Strict 1080x1920 viewport element */
+        #artwork-canvas {
+            width: 1080px;
+            height: 1920px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+            background-color: #050505;
+            transform-origin: center center;
+            flex-shrink: 0;
+        }
+
+        /* Cinema lighting overlays */
+        .cinematic-vignette {
+            background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.95) 100%);
+        }
+
+        .cinematic-gradient-overlay {
+            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 30%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.85) 100%);
+        }
+
+        .cinematic-grain {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+        }
+
+        /* Glowing fancy typography effect */
+        .text-glow-editorial {
+            text-shadow: 
+                0 0 15px rgba(255, 255, 255, 0.15),
+                0 0 30px rgba(255, 255, 255, 0.08),
+                0 4px 12px rgba(0, 0, 0, 0.8);
+        }
+
+        .text-glow-accent {
+            text-shadow: 
+                0 0 10px rgba(234, 179, 8, 0.2),
+                0 2px 8px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Font classes */
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-cormorant { font-family: 'Cormorant Garamond', serif; }
+        .font-bebas { font-family: 'Bebas Neue', sans-serif; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+
+        /* Custom Scrollbar for sidebar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121214;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-inter antialiased min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+
+    <!-- Left Sidebar / Editor Controls -->
+    <aside class="w-full md:w-[420px] lg:w-[460px] bg-zinc-900 border-r border-zinc-800/80 flex flex-col h-auto md:h-screen flex-shrink-0 z-20">
+        <!-- Header -->
+        <div class="p-5 border-b border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></div>
+                <h1 class="font-semibold text-lg tracking-wide text-zinc-100">Editorial Studio</h1>
+            </div>
+            <span class="text-xs uppercase px-2.5 py-1 bg-zinc-800 text-zinc-400 rounded-full font-mono">1080×1920</span>
+        </div>
+
+        <!-- Scrollable Form Controls -->
+        <div class="flex-1 overflow-y-auto p-5 space-y-6">
+            
+            <!-- Image Settings Section -->
+            <div class="space-y-3">
+                <label class="text-xs font-semibold uppercase tracking-wider text-zinc-400 block">Background Imagery</label>
+                
+                <div class="space-y-2">
+                    <label class="text-xs text-zinc-400">External Image URL</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-img-url" 
+                            class="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-amber-500/50 transition" 
+                            placeholder="https://images.unsplash.com/..."
+                            value="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1080">
+                        <button id="btn-load-url" class="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-medium rounded-lg text-zinc-200 transition">Load</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs text-zinc-400 block mb-1.5">Or Local File Upload</label>
+                    <label class="flex items-center justify-center w-full px-4 py-2.5 bg-zinc-950 border border-dashed border-zinc-700 hover:border-amber-500/50 rounded-lg cursor-pointer text-xs text-zinc-300 hover:text-white transition group">
+                        <svg class="w-4 h-4 mr-2 text-zinc-400 group-hover:text-amber-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <span>Choose JPG, PNG, WEBP File</span>
+                        <input type="file" id="input-img-file" accept="image/jpeg,image/png,image/webp" class="hidden">
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <div>
+                        <label class="text-xs text-zinc-400 block mb-1">Image Fit</label>
+                        <select id="select-img-fit" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-amber-500/50">
+                            <option value="cover">Cover (Crop)</option>
+                            <option value="contain">Contain (Fit)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-zinc-400 block mb-1">Overlay Opacity</label>
+                        <input type="range" id="input-overlay-opacity" min="0" max="1" step="0.05" value="0.65" class="w-full accent-amber-500 mt-2">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-zinc-800/80">
+
+            <!-- Typography & Content -->
+            <div class="space-y-4">
+                <label class="text-xs font-semibold uppercase tracking-wider text-zinc-400 block">Typography & Content</label>
+
+                <div>
+                    <label class="text-xs text-zinc-400 block mb-1">Quote Body</label>
+                    <textarea id="input-quote" rows="4" 
+                        class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-xs text-zinc-100 focus:outline-none focus:border-amber-500/50 leading-relaxed transition resize-none"
+                        placeholder="Enter quote text...">"Simplicity is about subtracting the obvious and adding the meaningful."</textarea>
+                </div>
+
+                <div>
+                    <label class="text-xs text-zinc-400 block mb-1">Author / Attribution</label>
+                    <input type="text" id="input-author" 
+                        class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-amber-500/50 transition" 
+                        placeholder="John Maeda" value="John Maeda">
+                </div>
+
+                <div>
+                    <label class="text-xs text-zinc-400 block mb-1">Brand Handle / Tagline</label>
+                    <input type="text" id="input-brand" 
+                        class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-amber-500/50 transition" 
+                        placeholder="@DESIGN.EDITORIAL" value="@DESIGN.EDITORIAL">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs text-zinc-400 block mb-1">Font Family</label>
+                        <select id="select-font-family" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-amber-500/50">
+                            <option value="font-playfair">Playfair Display</option>
+                            <option value="font-cormorant">Cormorant Garamond</option>
+                            <option value="font-bebas">Bebas Neue</option>
+                            <option value="font-cinzel">Cinzel</option>
+                            <option value="font-inter">Inter Sans</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-zinc-400 block mb-1">Glow Effect</label>
+                        <select id="select-glow" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-amber-500/50">
+                            <option value="subtle">Subtle Glow</option>
+                            <option value="accent">Warm Accent Glow</option>
+                            <option value="none">Disabled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-zinc-800/80">
+
+            <!-- Actions -->
+            <div class="space-y-2 pt-2">
+                <button id="btn-export" class="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-semibold text-xs tracking-wider uppercase rounded-lg shadow-lg shadow-amber-500/10 transition transform active:scale-[0.98] flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>Export 1080x1920 PNG</span>
+                </button>
+
+                <button id="btn-reset" class="w-full py-2 bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-200 text-xs font-medium rounded-lg transition">
+                    Reset Default Canvas
+                </button>
+            </div>
+
+            <div id="cors-warning" class="hidden p-3 bg-amber-950/40 border border-amber-800/50 rounded-lg text-[11px] text-amber-300 leading-relaxed">
+                <strong>CORS Notice:</strong> External image source prevents client-side PNG export. Please upload a local image file or use a CORS-enabled URL to export seamlessly.
+            </div>
+
+        </div>
+    </aside>
+
+    <!-- Main Interactive Preview Viewport -->
+    <main class="flex-1 preview-container relative overflow-hidden min-h-[600px] p-4 md:p-8 flex items-center justify-center">
+        
+        <!-- Live Scaled Viewport Container -->
+        <div id="preview-wrapper" class="relative flex items-center justify-center transition-all duration-300">
+            
+            <!-- Exact 1080x1920 Pixel Artwork Element -->
+            <div id="artwork-canvas" class="text-white flex flex-col justify-between p-24">
+                
+                <!-- Background Image Layer -->
+                <div class="absolute inset-0 z-0">
+                    <img id="artwork-bg-img" 
+                         src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1080" 
+                         alt="Background artwork" 
+                         class="w-full h-full object-cover transition-opacity duration-300"
+                         crossorigin="anonymous"
+                         onerror="handleImageError()">
+                    
+                    <!-- Dark/Graded Overlays for Editorial Readability -->
+                    <div id="bg-overlay" class="absolute inset-0 bg-black/65 transition-opacity"></div>
+                    <div class="absolute inset-0 cinematic-vignette"></div>
+                    <div class="absolute inset-0 cinematic-gradient-overlay"></div>
+                    <div class="absolute inset-0 cinematic-grain opacity-60"></div>
+                </div>
+
+                <!-- Canvas Visual Content Container (Z-Index above image overlays) -->
+                <div class="relative z-10 h-full flex flex-col justify-between items-center text-center">
+                    
+                    <!-- Top Editorial Accent Header -->
+                    <div class="w-full flex flex-col items-center pt-8">
+                        <div id="brand-container" class="space-y-3">
+                            <span id="display-brand" class="text-xs uppercase tracking-[0.4em] font-medium text-zinc-300/90 font-inter">@DESIGN.EDITORIAL</span>
+                            <div class="w-8 h-[1px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto"></div>
+                        </div>
+                    </div>
+
+                    <!-- Main Dynamic Quote Area with Auto-Scaling text container -->
+                    <div id="quote-container" class="w-full max-w-[900px] my-auto px-4 py-8 flex flex-col items-center justify-center min-h-[400px]">
+                        
+                        <!-- Subtle SVG Quote Marker -->
+                        <div class="mb-8 opacity-40">
+                            <svg width="42" height="32" viewBox="0 0 42 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 32V18.1818L8.75 0H18.375L12.25 16.5152H18.375V32H0ZM23.625 32V18.1818L32.375 0H42L35.875 16.5152H42V32H23.625Z" fill="white"/>
+                            </svg>
+                        </div>
+
+                        <!-- Main Quote Typography Text -->
+                        <div id="quote-text-wrapper" class="w-full overflow-hidden flex items-center justify-center">
+                            <p id="display-quote" class="font-playfair text-glow-editorial text-5xl md:text-6xl leading-[1.25] tracking-tight text-zinc-100 italic transition-all">
+                                "Simplicity is about subtracting the obvious and adding the meaningful."
+                            </p>
+                        </div>
+
+                        <!-- Accent Line -->
+                        <div class="w-12 h-[2px] bg-amber-400/80 my-10 rounded-full"></div>
+
+                        <!-- Dynamic Author Line -->
+                        <div id="author-container" class="w-full">
+                            <p id="display-author" class="text-lg uppercase tracking-[0.3em] font-light text-zinc-300 font-inter">
+                                — John Maeda
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Graphic Frame / Footer Accent -->
+                    <div class="w-full pb-8 flex flex-col items-center space-y-4">
+                        <div class="w-full max-w-[200px] flex items-center justify-between opacity-30">
+                            <div class="w-2 h-2 rounded-full border border-white"></div>
+                            <div class="flex-1 h-[1px] bg-white mx-3"></div>
+                            <div class="w-2 h-2 rounded-full border border-white"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        /*
+         * Main Interactive Engine & Safety Validation Logic
+         */
+        const DEFAULT_STATE = {
+            quote: '"Simplicity is about subtracting the obvious and adding the meaningful."',
+            author: 'John Maeda',
+            brand: '@DESIGN.EDITORIAL',
+            imgUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1080',
+            fontFamily: 'font-playfair',
+            glow: 'subtle',
+            overlayOpacity: 0.65,
+            imgFit: 'cover'
+        };
+
+        // UI DOM Elements
+        const canvas = document.getElementById('artwork-canvas');
+        const previewWrapper = document.getElementById('preview-wrapper');
+        const bgImg = document.getElementById('artwork-bg-img');
+        const bgOverlay = document.getElementById('bg-overlay');
+        
+        const displayQuote = document.getElementById('display-quote');
+        const displayAuthor = document.getElementById('display-author');
+        const displayBrand = document.getElementById('display-brand');
+        const brandContainer = document.getElementById('brand-container');
+        const authorContainer = document.getElementById('author-container');
+        const corsWarning = document.getElementById('cors-warning');
+
+        // Form Inputs
+        const inputQuote = document.getElementById('input-quote');
+        const inputAuthor = document.getElementById('input-author');
+        const inputBrand = document.getElementById('input-brand');
+        const inputImgUrl = document.getElementById('input-img-url');
+        const inputImgFile = document.getElementById('input-img-file');
+        const btnLoadUrl = document.getElementById('btn-load-url');
+        const selectFontFamily = document.getElementById('select-font-family');
+        const selectGlow = document.getElementById('select-glow');
+        const selectImgFit = document.getElementById('select-img-fit');
+        const inputOverlayOpacity = document.getElementById('input-overlay-opacity');
+        const btnExport = document.getElementById('btn-export');
+        const btnReset = document.getElementById('btn-reset');
+
+        /**
+         * Real-time Canvas Responsiveness logic:
+         * Fits strict 1080x1920 box into client window viewport seamlessly.
+         */
+        function scalePreviewCanvas() {
+            const container = previewWrapper.parentElement;
+            const padding = 32;
+            const availableWidth = container.clientWidth - padding;
+            const availableHeight = container.clientHeight - padding;
+
+            const scaleX = availableWidth / 1080;
+            const scaleY = availableHeight / 1920;
+            const scale = Math.min(scaleX, scaleY, 0.45); // Max scale threshold
+
+            previewWrapper.style.width = `${1080 * scale}px`;
+            previewWrapper.style.height = `${1920 * scale}px`;
+            canvas.style.transform = `scale(${scale})`;
+        }
+
+        /**
+         * Automatic dynamic text scale & fitting safety checks
+         * Guarantees quote text fits inside the exact safe bounding container.
+         */
+        function autoFitQuoteTypography() {
+            const container = document.getElementById('quote-text-wrapper');
+            let fontSize = 72; // Start from large size
+            const minFontSize = 28;
+
+            displayQuote.style.fontSize = `${fontSize}px`;
+
+            // Reduce font-size iteratively if height exceeds allowable text height
+            while ((displayQuote.offsetHeight > 750 || displayQuote.scrollWidth > container.clientWidth) && fontSize > minFontSize) {
+                fontSize -= 2;
+                displayQuote.style.fontSize = `${fontSize}px`;
+            }
+        }
+
+        // Update Canvas Visuals
+        function updateCanvas() {
+            // Text values
+            const quoteVal = inputQuote.value.trim();
+            displayQuote.textContent = quoteVal ? `"${quoteVal.replace(/^["']|["']$/g, '')}"` : '';
+
+            const authorVal = inputAuthor.value.trim();
+            if (authorVal) {
+                displayAuthor.textContent = `— ${authorVal}`;
+                authorContainer.style.display = 'block';
+            } else {
+                authorContainer.style.display = 'none';
+            }
+
+            const brandVal = inputBrand.value.trim();
+            if (brandVal) {
+                displayBrand.textContent = brandVal;
+                brandContainer.style.display = 'block';
+            } else {
+                brandContainer.style.display = 'none';
+            }
+
+            // Font styles
+            displayQuote.className = `${selectFontFamily.value} italic leading-[1.25] tracking-tight text-zinc-100 transition-all`;
+            if (selectGlow.value === 'subtle') {
+                displayQuote.classList.add('text-glow-editorial');
+            } else if (selectGlow.value === 'accent') {
+                displayQuote.classList.add('text-glow-accent');
+            }
+
+            // Image styling
+            bgImg.style.objectFit = selectImgFit.value;
+            bgOverlay.style.opacity = inputOverlayOpacity.value;
+
+            // Recalculate font safety size
+            setTimeout(autoFitQuoteTypography, 10);
+        }
+
+        // Image URL handling
+        btnLoadUrl.addEventListener('click', () => {
+            const url = inputImgUrl.value.trim();
+            if (url) {
+                bgImg.crossOrigin = "anonymous";
+                bgImg.src = url;
+                corsWarning.classList.add('hidden');
+            }
+        });
+
+        // Local Image Upload Handler
+        inputImgFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    bgImg.removeAttribute('crossorigin');
+                    bgImg.src = event.target.result;
+                    corsWarning.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Fallback Error Handler for Image
+        function handleImageError() {
+            bgImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1080' height='1920' viewBox='0 0 1080 1920'%3E%3Crect width='100%25' height='100%25' fill='%23121214'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%233f3f46' font-family='sans-serif' font-size='24'%3EEditorial Graphic Background%3C/text%3E%3C/svg%3E";
+        }
+
+        /**
+         * Export Canvas as 1080x1920 High Resolution PNG using html2canvas
+         */
+        async function exportHighResPNG() {
+            btnExport.disabled = true;
+            btnExport.classList.add('opacity-75');
+            btnExport.querySelector('span').textContent = 'Rendering 1080x1920 PNG...';
+
+            try {
+                // Temporarily detach scale transformations for exact rendering
+                const originalTransform = canvas.style.transform;
+                canvas.style.transform = 'none';
+
+                const exportedCanvas = await html2canvas(canvas, {
+                    width: 1080,
+                    height: 1920,
+                    scale: 1, // Native high-res pixel ratio
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#050505',
+                    logging: false
+                });
+
+                // Reapply interactive UI transform
+                canvas.style.transform = originalTransform;
+
+                // Trigger Download
+                const imageURI = exportedCanvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `instagram-quote-1080x1920-${Date.now()}.png`;
+                link.href = imageURI;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (err) {
+                console.error('Export Error:', err);
+                corsWarning.classList.remove('hidden');
+            } finally {
+                btnExport.disabled = false;
+                btnExport.classList.remove('opacity-75');
+                btnExport.querySelector('span').textContent = 'Export 1080x1920 PNG';
+                scalePreviewCanvas();
+            }
+        }
+
+        // Event Listeners Registration
+        inputQuote.addEventListener('input', updateCanvas);
+        inputAuthor.addEventListener('input', updateCanvas);
+        inputBrand.addEventListener('input', updateCanvas);
+        selectFontFamily.addEventListener('change', updateCanvas);
+        selectGlow.addEventListener('change', updateCanvas);
+        selectImgFit.addEventListener('change', updateCanvas);
+        inputOverlayOpacity.addEventListener('input', updateCanvas);
+        
+        btnExport.addEventListener('click', exportHighResPNG);
+
+        btnReset.addEventListener('click', () => {
+            inputQuote.value = DEFAULT_STATE.quote;
+            inputAuthor.value = DEFAULT_STATE.author;
+            inputBrand.value = DEFAULT_STATE.brand;
+            inputImgUrl.value = DEFAULT_STATE.imgUrl;
+            selectFontFamily.value = DEFAULT_STATE.fontFamily;
+            selectGlow.value = DEFAULT_STATE.glow;
+            selectImgFit.value = DEFAULT_STATE.imgFit;
+            inputOverlayOpacity.value = DEFAULT_STATE.overlayOpacity;
+            bgImg.crossOrigin = "anonymous";
+            bgImg.src = DEFAULT_STATE.imgUrl;
+            corsWarning.classList.add('hidden');
+            updateCanvas();
+        });
+
+        // Initialize Application Logic
+        window.addEventListener('resize', scalePreviewCanvas);
+        window.addEventListener('DOMContentLoaded', () => {
+            scalePreviewCanvas();
+            updateCanvas();
+        });
+    </script>
+</body>
+</html>
